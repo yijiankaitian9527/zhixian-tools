@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>亲戚关系计算器 - 知闲工具箱</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#fff7ed;color:#333;min-height:100vh;padding:16px;max-width:640px;margin:0 auto}
+.topnav{display:flex;align-items:center;margin-bottom:12px}
+.topnav a{color:#ea580c;text-decoration:none;font-size:17px}
+h1{font-size:26px;text-align:center;margin:8px 0 4px;color:#9a3412}
+.sub{text-align:center;color:#999;font-size:14px;margin-bottom:16px}
+.chain{background:#fff;border:2px solid #fdba74;border-radius:12px;min-height:76px;padding:14px;font-size:22px;text-align:center;margin-bottom:8px;line-height:1.6}
+.chain .me{color:#ea580c;font-weight:bold}
+.result{background:#fff7ed;border:2px dashed #fdba74;border-radius:12px;min-height:90px;padding:14px;text-align:center;margin-bottom:14px}
+.result .big{font-size:38px;color:#c2410c;font-weight:bold;margin:4px 0}
+.result .small{font-size:14px;color:#999}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+button.rel{background:#fff;border:2px solid #fed7aa;border-radius:10px;font-size:19px;padding:14px 4px;color:#9a3412;cursor:pointer}
+button.rel:active{background:#ffedd5}
+.row{display:flex;gap:10px;margin-bottom:16px}
+.row button{flex:1;font-size:19px;padding:14px;border-radius:10px;border:none;cursor:pointer}
+#calc{background:#ea580c;color:#fff;font-weight:bold}
+#clear{background:#e7e5e4;color:#57534e}
+.tip{background:#fff;border-left:4px solid #fdba74;padding:10px 12px;font-size:14px;color:#78716c;border-radius:0 8px 8px 0;margin-top:8px;line-height:1.7}
+.footer{text-align:center;color:#bbb;font-size:12px;margin-top:20px;padding-bottom:20px}
+</style>
+</head>
+<body>
+<div class="topnav"><a href="index.html">‹ 返回工具箱</a></div>
+<h1>亲戚关系计算器</h1>
+<div class="sub">过年不怕叫错人，点一点就算出来</div>
+
+<div class="chain" id="chain"><span class="me">我</span></div>
+<div class="result" id="result"><div class="small">点下方按钮组成关系链，再点"计算"</div></div>
+
+<div class="grid" id="btns"></div>
+<div class="row">
+  <button id="back">‹ 回退</button>
+  <button id="clear">清空</button>
+  <button id="calc">计算</button>
+</div>
+
+<div class="tip">💡 比如想算"爸爸的妈妈"：先点"爸爸"，再点"妈妈"，最后点"计算"，得到"奶奶"。<br>💡 称呼各地略有不同，这里用最通用的叫法。</div>
+<div class="footer">知闲工具箱 · 免费 · 无广告 · 不收集信息</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+var RELS=["爸爸","妈妈","丈夫","妻子","哥哥","弟弟","姐姐","妹妹","儿子","女儿","爷爷","奶奶","外公","外婆"];
+/* 关系链归约字典：key 为 "A的B"，value 为结果 */
+var D={
+"爸爸的爸爸":"爷爷","爸爸的妈妈":"奶奶","爸爸的妻子":"妈妈",
+"爸爸的哥哥":"伯父","爸爸的弟弟":"叔叔","爸爸的姐姐":"姑妈","爸爸的妹妹":"姑姑",
+"爸爸的儿子":"兄弟","爸爸的女儿":"姐妹",
+"妈妈的爸爸":"外公","妈妈的妈妈":"外婆","妈妈的丈夫":"爸爸",
+"妈妈的哥哥":"舅舅","妈妈的弟弟":"舅舅","妈妈的姐姐":"姨妈","妈妈的妹妹":"姨妈",
+"妈妈的儿子":"兄弟","妈妈的女儿":"姐妹",
+"丈夫的爸爸":"公公","丈夫的妈妈":"婆婆","丈夫的哥哥":"大伯子","丈夫的弟弟":"小叔子",
+"丈夫的姐姐":"大姑子","丈夫的妹妹":"小姑子",
+"妻子的爸爸":"岳父","妻子的妈妈":"岳母","妻子的哥哥":"大舅子","妻子的弟弟":"小舅子",
+"妻子的姐姐":"大姨子","妻子的妹妹":"小姨子",
+"哥哥的妻子":"嫂子","弟弟的妻子":"弟妹","姐姐的丈夫":"姐夫","妹妹的丈夫":"妹夫",
+"儿子的儿子":"孙子","儿子的女儿":"孙女","女儿的儿子":"外孙","女儿的女儿":"外孙女",
+"儿子的妻子":"儿媳","女儿的丈夫":"女婿",
+"爷爷的爸爸":"太爷爷","爷爷的妈妈":"太奶奶","奶奶的爸爸":"太姥爷","奶奶的妈妈":"太姥姥",
+"外公的爸爸":"太外公","外公的妈妈":"太外婆","外婆的爸爸":"太外公","外婆的妈妈":"太外婆",
+"伯父的妻子":"伯母","叔叔的妻子":"婶婶","姑妈的丈夫":"姑父","姑姑的丈夫":"姑父",
+"舅舅的妻子":"舅妈","姨妈的丈夫":"姨父",
+"哥哥的儿子":"侄子","哥哥的女儿":"侄女","弟弟的儿子":"侄子","弟弟的女儿":"侄女",
+"姐姐的儿子":"外甥","姐姐的女儿":"外甥女","妹妹的儿子":"外甥","妹妹的女儿":"外甥女",
+"爸爸的爷爷":"太爷爷","爸爸的奶奶":"太奶奶","爸爸的外公":"太姥爷","爸爸的外婆":"太姥姥",
+"妈妈的爷爷":"太外公","妈妈的奶奶":"太外婆","妈妈的外公":"太外公","妈妈的外婆":"太外婆",
+"我":"我","爸爸":"爸爸","妈妈":"妈妈"
+};
+var chain=[];
+function render(){
+  var h='<span class="me">我</span>';
+  chain.forEach(function(r){h+=' 的 '+r;});
+  $("chain").innerHTML=h;
+}
+RELS.forEach(function(r){
+  var b=document.createElement("button");
+  b.className="rel";b.textContent=r;
+  b.onclick=function(){chain.push(r);render();};
+  $("btns").appendChild(b);
+});
+$("back").onclick=function(){chain.pop();render();};
+$("clear").onclick=function(){chain=[];render();$("result").innerHTML='<div class="small">点下方按钮组成关系链，再点"计算"</div>';};
+$("calc").onclick=function(){
+  if(!chain.length){$("result").innerHTML='<div class="small">请先点按钮组成关系链</div>';return;}
+  var parts=chain.slice();
+  var steps=[];
+  while(parts.length>1){
+    var key=parts[0]+"的"+parts[1];
+    var v=D[key];
+    if(!v){$("result").innerHTML='<div class="small">算不出来："'+key+'" 太复杂了，换个更近的关系试试</div>';return;}
+    steps.push(key+" → "+v);
+    parts=[v].concat(parts.slice(2));
+  }
+  var ans=parts[0];
+  var h='<div class="big">'+ans+'</div>';
+  if(steps.length>1)h+='<div class="small">'+steps.join("<br>")+'</div>';
+  else h+='<div class="small">我'+(chain.length?" 的 "+chain.join(" 的 "):"")+'</div>';
+  $("result").innerHTML=h;
+};
+render();
+})();
+</script>
+</body>
+</html>
