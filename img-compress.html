@@ -64,8 +64,8 @@
       </div>
       <div class="field">输出格式
         <select id="format">
+          <option value="jpeg" selected>JPG（体积最小，推荐）</option>
           <option value="keep">保持原格式</option>
-          <option value="jpeg">JPG</option>
           <option value="png">PNG</option>
           <option value="webp">WebP</option>
         </select>
@@ -116,7 +116,7 @@ function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").rep
 var presetBox = $("presets");
 PRESETS.forEach(function(p, idx){
   var b = document.createElement("button");
-  b.className = "preset" + (idx === 0 ? " on" : "");
+  b.className = "preset";
   b.textContent = p.name;
   b.title = p.tip;
   b.onclick = function(){
