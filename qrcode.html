@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>二维码生成 - 知闲工具箱</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#fff7ed;color:#333;min-height:100vh;padding:16px;max-width:640px;margin:0 auto;text-align:center}
+.topnav{display:flex;margin-bottom:12px;text-align:left}
+.topnav a{color:#ea580c;text-decoration:none;font-size:17px}
+h1{font-size:26px;margin:8px 0 4px;color:#9a3412}
+.sub{color:#999;font-size:14px;margin-bottom:16px}
+textarea{width:100%;font-size:18px;padding:14px;border:2px solid #fed7aa;border-radius:12px;min-height:110px;margin-bottom:12px;font-family:inherit}
+#make{background:#ea580c;color:#fff;font-size:20px;font-weight:bold;border:none;border-radius:12px;padding:15px 50px;cursor:pointer;margin-bottom:16px}
+#qrbox{background:#fff;border:2px solid #fdba74;border-radius:14px;min-height:280px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;padding:16px}
+#qrbox .ph{color:#bbb;font-size:15px}
+#qrbox canvas{max-width:100%}
+#dl{display:none;background:#fff;border:2px solid #ea580c;color:#ea580c;font-size:17px;border-radius:10px;padding:12px 30px;cursor:pointer;margin-bottom:8px}
+.tip{background:#fff;border-left:4px solid #fdba74;padding:10px 12px;font-size:14px;color:#78716c;border-radius:0 8px 8px 0;margin-top:8px;text-align:left;line-height:1.7}
+.footer{color:#bbb;font-size:12px;margin-top:20px;padding-bottom:20px}
+</style>
+</head>
+<body>
+<div class="topnav"><a href="index.html">‹ 返回工具箱</a></div>
+<h1>二维码生成</h1>
+<div class="sub">网址、文字、WiFi密码都能转二维码，本地生成不上传</div>
+
+<textarea id="txt" placeholder="输入网址或文字，比如：https://www.baidu.com"></textarea><br>
+<button id="make">生成二维码</button>
+<div id="qrbox"><span class="ph">二维码显示在这里</span></div>
+<button id="dl">保存图片</button>
+
+<div class="tip">💡 WiFi分享格式：在输入框填 <b>WIFI:T:WPA;S:你家WiFi名;P:密码;;</b>，客人扫码直连（WPA换成WEP/NOPASS按实际改）。</div>
+<div class="footer">知闲工具箱 · 免费 · 无广告 · 不收集信息</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id);};
+$("make").onclick=function(){
+  var t=$("txt").value.trim();
+  if(!t){$("qrbox").innerHTML='<span class="ph">请先输入内容</span>';return;}
+  $("qrbox").innerHTML="";
+  var c=document.createElement("canvas");
+  $("qrbox").appendChild(c);
+  if(typeof QRCode==="undefined"){$("qrbox").innerHTML='<span class="ph">二维码组件加载失败，请检查网络后重试</span>';return;}
+  QRCode.toCanvas(c,t,{width:260,margin:2,color:{dark:"#1c1917",light:"#ffffff"}},function(err){
+    if(err){$("qrbox").innerHTML='<span class="ph">内容太长，生成失败，精简后再试</span>';$("dl").style.display="none";return;}
+    $("dl").style.display="inline-block";
+  });
+};
+$("dl").onclick=function(){
+  var c=$("qrbox").querySelector("canvas");
+  if(!c)return;
+  var a=document.createElement("a");
+  a.href=c.toDataURL("image/png");
+  a.download="二维码.png";
+  a.click();
+};
+})();
+</script>
+</body>
+</html>
